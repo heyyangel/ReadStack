@@ -50,7 +50,7 @@ app.get('/api/seed-database', async (req, res) => {
                 description: "A story of wealth, love, and the American Dream.",
                 price: 15.99,
                 category: "Fiction",
-                coverImage: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=800",
+                cover_url: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=800",
                 stock: 10
             },
             {
@@ -59,15 +59,28 @@ app.get('/api/seed-database', async (req, res) => {
                 description: "An easy & proven way to build good habits & break bad ones.",
                 price: 24.99,
                 category: "Self-Help",
-                coverImage: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=800",
+                cover_url: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=800",
                 stock: 25
+            },
+            {
+                title: "The Alchemist",
+                author: "Paulo Coelho",
+                description: "A fable about following your dream.",
+                price: 18.50,
+                category: "Fiction",
+                cover_url: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=800",
+                stock: 15
             }
         ];
 
         for (const book of books) {
             await prisma.book.upsert({
-                where: { title: book.title },
-                update: {},
+                where: { book_title_author: { title: book.title, author: book.author } },
+                update: {
+                    cover_url: book.cover_url,
+                    description: book.description,
+                    price: book.price
+                },
                 create: book
             });
         }
