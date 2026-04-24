@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  email          String   @unique
+  password       String
+  wallet_balance Float    @default(0.0)
+  streak_count   Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  orders         Order[]
+  readingProgress ReadingProgress[]
+  favorites       Favorite[]
+  sparks          Spark[]
+}
+
+model Book {
+  id             Int      @id @default(autoincrement())
+  title          String
+  description    String?
+  author         String
+  price          Float
+  preview_pdf_url String?
+  full_pdf_url   String?
+  category       String
+  tags           String[]
+  cover_url      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  orders         Order[]
+  readingProgress ReadingProgress[]
+  favorites       Favorite[]
+  sparks          Spark[]
+
+
+  @@unique([title, author], name: "book_title_author")
+}
+
+model Order {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  user           User     @relation(fields: [user_id], references: [id])
+  book_id        Int
+  book           Book     @relation(fields: [book_id], references: [id])
+  payment_status String
+  transaction_id String?
+  amount         Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model ReadingProgress {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  user        User     @relation(fields: [user_id], references: [id])
+  book_id     Int
+  book        Book     @relation(fields: [book_id], references: [id])
+  current_page Int      @default(0)
+  total_pages  Int
+  updatedAt   DateTime @updatedAt
+
+  @@unique([user_id, book_id])
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  user      User     @relation(fields: [user_id], references: [id])
+  book_id   Int
+  book      Book     @relation(fields: [book_id], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([user_id, book_id])
+}
+
+model Spark {
+  id          Int      @id @default(autoincrement())
+  content     String
+  user_id     Int
+  user        User     @relation(fields: [user_id], references: [id])
+  book_id     Int
+  book        Book     @relation(fields: [book_id], references: [id])
+  page_number Int?
+  createdAt   DateTime @default(now())
+}
+
