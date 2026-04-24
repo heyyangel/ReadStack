@@ -36,6 +36,49 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', message: 'API is healthy' });
 });
 
+// TEMPORARY SEED ROUTE (Delete after use)
+app.get('/api/seed-database', async (req, res) => {
+    try {
+        const { PrismaClient } = require('@prisma/client');
+        const prisma = new PrismaClient();
+        
+        // This is a simplified version of your seed.js
+        const books = [
+            {
+                title: "The Great Gatsby",
+                author: "F. Scott Fitzgerald",
+                description: "A story of wealth, love, and the American Dream.",
+                price: 15.99,
+                category: "Fiction",
+                coverImage: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=800",
+                stock: 10
+            },
+            {
+                title: "Atomic Habits",
+                author: "James Clear",
+                description: "An easy & proven way to build good habits & break bad ones.",
+                price: 24.99,
+                category: "Self-Help",
+                coverImage: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=800",
+                stock: 25
+            }
+        ];
+
+        for (const book of books) {
+            await prisma.book.upsert({
+                where: { title: book.title },
+                update: {},
+                create: book
+            });
+        }
+        
+        res.json({ success: true, message: "Database seeded successfully!" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
