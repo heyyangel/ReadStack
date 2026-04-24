@@ -58,8 +58,7 @@ app.get('/api/seed-database', async (req, res) => {
                 description: doc.first_sentence ? doc.first_sentence[0] : "A timeless classic from the global literary archives.",
                 price: Math.floor(Math.random() * (25 - 10 + 1) + 10) + 0.99, // Random price between 10-25
                 category: doc.subject ? doc.subject[0] : "Classic",
-                cover_url: `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`,
-                stock: 20
+                cover_url: `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
             }));
 
         for (const book of booksToInsert) {
