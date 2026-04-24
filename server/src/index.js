@@ -40,37 +40,55 @@ app.get('/health', (req, res) => {
 // TEMPORARY SEED ROUTE (Delete after use)
 app.get('/api/seed-database', async (req, res) => {
     try {
+        const { PrismaClient } = require('@prisma/client');
         const axios = require('axios');
         const prisma = require('./lib/prisma');
         
         // 1. CLEAR ALL EXISTING BOOKS (Hard Reset)
         await prisma.book.deleteMany({});
         
-        // 2. Fetch popular books from Open Library
-        const response = await axios.get('https://openlibrary.org/search.json?q=classic+fiction&limit=12');
-        const docs = response.data.docs;
+        const genres = [
+            'Mystery', 'Sci-Fi', 'Fantasy', 'Romance', 'History', 
+            'Science', 'Art', 'Self-Help', 'Business', 'Finance', 
+            'Philosophy', 'Cooking', 'Travel', 'Biography', 'Fiction'
+        ];
 
-        const booksToInsert = docs
-            .filter(doc => doc.title && doc.author_name && doc.cover_i) // Only use books with covers
-            .map(doc => ({
-                title: doc.title,
-                author: doc.author_name[0],
-                description: doc.first_sentence ? doc.first_sentence[0] : "A timeless classic from the global literary archives.",
-                price: Math.floor(Math.random() * (25 - 10 + 1) + 10) + 0.99, // Random price between 10-25
-                category: doc.subject ? doc.subject[0] : "Classic",
-                cover_url: `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
-            }));
+        let totalSeeded = 0;
+        const bookTitles = [];
 
-        for (const book of booksToInsert) {
-            await prisma.book.create({
-                data: book
-            });
+        for (const genre of genres) {
+            try {
+                const response = await axios.get(`https://openlibrary.org/search.json?q=subject:${genre}&limit=40`);
+                const docs = response.data.docs;
+
+                const booksToInsert = docs
+                    .filter(doc => doc.title && doc.author_name && doc.cover_i)
+                    .map(doc => ({
+                        title: doc.title,
+                        author: doc.author_name[0],
+                        description: doc.first_sentence ? doc.first_sentence[0] : `An engaging exploration of ${genre} from the global literary archives.`,
+                        price: Math.floor(Math.random() * (45 - 15 + 1) + 15) + 0.99, // Random price between 15-45
+                        category: genre,
+                        cover_url: `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
+                    }));
+
+                for (const book of booksToInsert) {
+                    await prisma.book.upsert({
+                        where: { book_title_author: { title: book.title, author: book.author } },
+                        update: {},
+                        create: book
+                    });
+                    totalSeeded++;
+                }
+            } catch (err) {
+                console.error(`Error seeding ${genre}:`, err.message);
+            }
         }
         
         res.json({ 
             success: true, 
-            message: `Successfully seeded ${booksToInsert.length} books from Open Library!`,
-            books: booksToInsert.map(b => b.title)
+            message: `Master Seed Complete! Successfully seeded ${totalSeeded} books across ${genres.length} genres.`,
+            genres: genres
         });
     } catch (error) {
         console.error(error);
