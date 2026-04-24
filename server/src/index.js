@@ -37,11 +37,11 @@ app.get('/health', (req, res) => {
 });
 
 // TEMPORARY SEED ROUTE (Delete after use)
+// TEMPORARY SEED ROUTE (Delete after use)
 app.get('/api/seed-database', async (req, res) => {
     try {
-        const { PrismaClient } = require('@prisma/client');
         const axios = require('axios');
-        const prisma = new PrismaClient();
+        const prisma = require('./lib/prisma');
         
         // 1. CLEAR ALL EXISTING BOOKS (Hard Reset)
         await prisma.book.deleteMany({});
