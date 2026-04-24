@@ -31,17 +31,10 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/external-books', require('./routes/externalBooks'));
 
-// Serve Static Files in Production
-if (process.env.NODE_ENV === 'production') {
-    const clientPath = path.join(__dirname, '../../client/dist');
-    app.use(express.static(clientPath));
-    
-    app.get('*', (req, res) => {
-        if (!req.path.startsWith('/api')) {
-            res.sendFile(path.join(clientPath, 'index.html'));
-        }
-    });
-}
+// Basic health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', message: 'API is healthy' });
+});
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
