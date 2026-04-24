@@ -48,17 +48,18 @@ app.get('/api/seed-database', async (req, res) => {
         await prisma.book.deleteMany({});
         
         const genres = [
-            'Mystery', 'Sci-Fi', 'Fantasy', 'Romance', 'History', 
-            'Science', 'Art', 'Self-Help', 'Business', 'Finance', 
-            'Philosophy', 'Cooking', 'Travel', 'Biography', 'Fiction'
+            'Art', 'Mystery', 'Sci-Fi', 'Technology', 'Business', 
+            'Finance', 'Self-Help', 'Fiction', 'History', 'Romance',
+            'Fantasy', 'Philosophy', 'Science', 'Travel', 'Biography'
         ];
 
         let totalSeeded = 0;
-        const bookTitles = [];
 
         for (const genre of genres) {
             try {
-                const response = await axios.get(`https://openlibrary.org/search.json?q=subject:${genre}&limit=40`);
+                // Map UI names to Open Library search terms if needed
+                const searchTerm = genre === 'Sci-Fi' ? 'Science Fiction' : genre;
+                const response = await axios.get(`https://openlibrary.org/search.json?q=subject:${searchTerm}&limit=40`);
                 const docs = response.data.docs;
 
                 const booksToInsert = docs
